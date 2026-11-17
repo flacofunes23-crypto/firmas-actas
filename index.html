@@ -79,7 +79,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <main>
   <h1>Firmas de acta</h1>
   <p class="sub" style="margin-bottom:4px">Subí el acta en Word, cada uno firma con el dedo y se descarga el mismo Word con las firmas al final.</p>
-  <p style="font-size:12px;color:#1f3fa0;margin:0 0 16px;font-weight:700">Versión 3</p>
+  <p style="font-size:12px;color:#1f3fa0;margin:0 0 16px;font-weight:700">Versión 4</p>
 
   <div class="caja">
     <div class="paso">1 · El acta</div>
@@ -193,8 +193,11 @@ async function firmarDocx(JSZip, buffer, firmantes, opciones) {
   const vacia = `<w:tc><w:tcPr><w:tcW w:w="${col}" w:type="dxa"/><w:vAlign w:val="bottom"/></w:tcPr><w:p/></w:tc>`;
   const mapa = {};
   let maxFila = 0;
+  // si los primeros renglones quedaron vacíos, se suben las firmas para que queden pegadas al texto
+  const filaDe = (f, i) => (f.pos && f.pos.fila != null) ? f.pos.fila : Math.floor(i / NCOL);
+  const minFila = firmantes.length ? Math.min(...firmantes.map(filaDe)) : 0;
   firmantes.forEach((f, i) => {
-    const fi = (f.pos && f.pos.fila != null) ? f.pos.fila : Math.floor(i / NCOL);
+    const fi = filaDe(f, i) - minFila;
     const co = (f.pos && f.pos.col != null) ? f.pos.col : (i % NCOL);
     mapa[fi + ',' + co] = celdas[i];
     if (fi > maxFila) maxFila = fi;
