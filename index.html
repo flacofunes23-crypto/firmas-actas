@@ -79,7 +79,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <main>
   <h1>Firmas de acta</h1>
   <p class="sub" style="margin-bottom:4px">Subí el acta en Word, cada uno firma con el dedo y se descarga el mismo Word con las firmas al final.</p>
-  <p style="font-size:12px;color:#1f3fa0;margin:0 0 16px;font-weight:700">Versión 4</p>
+  <p style="font-size:12px;color:#1f3fa0;margin:0 0 16px;font-weight:700">Versión 5</p>
 
   <div class="caja">
     <div class="paso">1 · El acta</div>
@@ -111,7 +111,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div class="fila" style="margin-top:8px">
       <span style="font-size:14px">Espacio entre el texto y las firmas</span>
-      <select id="espacio"><option value="120">Poco</option><option value="360" selected>Normal</option><option value="900">Mucho</option></select>
+      <select id="espacio"><option value="20">Pegado</option><option value="120" selected>Poco</option><option value="360">Normal</option><option value="900">Mucho</option></select>
     </div>
     <div class="fila" style="margin-top:8px">
       <button class="chico" id="masFila">+ Renglón de firmas</button>
@@ -183,7 +183,7 @@ async function firmarDocx(JSZip, buffer, firmantes, opciones) {
       let cx = maxW, cy = Math.round(maxW * f.h / f.w);
       if (cy > maxH) { cy = maxH; cx = Math.round(maxH * f.w / f.h); }
       const id = 7000 + i;
-      arriba = `<w:p>${pCentro(360)}<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="Firma ${i + 1}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="${nombre}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+      arriba = `<w:p>${pCentro(60)}<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="Firma ${i + 1}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="${nombre}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
     }
     const lineas = String(f.aclaracion || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     const acl = (lineas.length ? lineas : ['']).map(l => `<w:p>${pCentro(0)}<w:r>${runFont}<w:t xml:space="preserve">${escXml(l)}</w:t></w:r></w:p>`).join('');
@@ -202,15 +202,15 @@ async function firmarDocx(JSZip, buffer, firmantes, opciones) {
     mapa[fi + ',' + co] = celdas[i];
     if (fi > maxFila) maxFila = fi;
   });
-  const altoFila = opciones.altoFila || (NCOL >= 5 ? 1200 : 1560);
+  const altoFila = opciones.altoFila || 0;
   let filas = '';
   for (let r = 0; r <= maxFila; r++) {
     let tcs = '';
     for (let c = 0; c < NCOL; c++) tcs += mapa[r + ',' + c] || vacia;
-    filas += `<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="${altoFila}" w:hRule="atLeast"/></w:trPr>${tcs}</w:tr>`;
+    filas += `<w:tr><w:trPr><w:cantSplit/>${altoFila ? `<w:trHeight w:val="${altoFila}" w:hRule="atLeast"/>` : ''}</w:trPr>${tcs}</w:tr>`;
   }
   const sinBorde = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(b => `<w:${b} w:val="nil"/>`).join('');
-  const espacio = opciones.espacio != null ? opciones.espacio : 240;
+  const espacio = opciones.espacio != null ? opciones.espacio : 120;
   const tabla = `<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="${Math.max(espacio, 20)}" w:lineRule="exact"/></w:pPr></w:p><w:tbl><w:tblPr><w:tblW w:w="${col * NCOL}" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders>${sinBorde}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${('<w:gridCol w:w="' + col + '"/>').repeat(NCOL)}</w:tblGrid>${filas}</w:tbl><w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/></w:rPr></w:pPr></w:p>`;
 
   const cierreBody = doc.lastIndexOf('</w:body>');
