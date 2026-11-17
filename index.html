@@ -78,7 +78,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body>
 <main>
   <h1>Firmas de acta</h1>
-  <p class="sub">Subí el acta en Word, cada uno firma con el dedo y se descarga el mismo Word con las firmas al final.</p>
+  <p class="sub" style="margin-bottom:4px">Subí el acta en Word, cada uno firma con el dedo y se descarga el mismo Word con las firmas al final.</p>
+  <p style="font-size:12px;color:#1f3fa0;margin:0 0 16px;font-weight:700">Versión 3</p>
 
   <div class="caja">
     <div class="paso">1 · El acta</div>
@@ -476,6 +477,6 @@ document.getElementById('generar').onclick = async () => {
 pintarFrecuentes();
 if (!firmantes.length) nuevoFirmante('');
 </script>
-<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});}</script>
 </body>
 </html>
